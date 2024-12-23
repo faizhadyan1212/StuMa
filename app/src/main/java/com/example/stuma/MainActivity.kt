@@ -77,7 +77,7 @@ fun MainNavigation(
 
         // Register Screen
         composable("register") {
-            RegisterScreen(navController = navController)
+            RegisterScreen(navController = navController, authViewModel = authViewModel)
         }
 
         // Home Screen

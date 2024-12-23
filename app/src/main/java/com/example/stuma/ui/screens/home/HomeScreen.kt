@@ -4,6 +4,9 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -133,12 +136,14 @@ fun HomeBottomBar(navController: NavController) {
 
 @Composable
 fun HomeContent(modifier: Modifier = Modifier, homeViewModel: HomeViewModel) {
+    // Mengamati perubahan itemsState di HomeViewModel
     val itemsState by homeViewModel.itemsState.collectAsState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), // Add scroll capability here
         verticalArrangement = Arrangement.Top
     ) {
         Text(
@@ -191,6 +196,7 @@ fun HomeContent(modifier: Modifier = Modifier, homeViewModel: HomeViewModel) {
                 )
             }
         }
+
     }
 }
 
