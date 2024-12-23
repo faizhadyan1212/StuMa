@@ -54,8 +54,6 @@ interface ApiService {
     ): Response<Unit>
 
     // Get Items
-    @GET("api/items/")
-    suspend fun getItems(
-        @Header("Authorization") token: String
-    ): Response<List<ItemResponse>>
+    @GET("api/items") // Sesuaikan dengan endpoint API Anda
+    suspend fun getItems(@Header("Authorization") authHeader: String): Response<ApiResponse>
 }

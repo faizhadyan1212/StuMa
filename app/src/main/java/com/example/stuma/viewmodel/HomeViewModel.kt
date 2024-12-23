@@ -23,6 +23,7 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
             try {
                 val result = homeRepository.getItems()
                 _itemsState.value = result
+                Log.d("HomeViewModel", "ItemsState: $result") // Log tambahan
 
                 when (result) {
                     is Result.Success -> Log.d("HomeViewModel", "Fetched ${result.data.size} items successfully.")
@@ -35,6 +36,7 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
             }
         }
     }
+
 
     fun resetState() {
         _itemsState.value = null
