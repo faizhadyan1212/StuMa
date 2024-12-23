@@ -17,11 +17,11 @@ fun ItemDetailScreen(navController: NavController, item: ItemResponse, homeViewM
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = item.name) },
+                title = { Text(text = item.items_name) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Gunakan icon bawaan
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -37,7 +37,7 @@ fun ItemDetailScreen(navController: NavController, item: ItemResponse, homeViewM
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Name: ${item.name}",
+                text = "Name: ${item.items_name}",
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
@@ -57,7 +57,7 @@ fun ItemDetailScreen(navController: NavController, item: ItemResponse, homeViewM
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "Seller ID: ${item.user_id}",
+                text = "Seller: ${item.seller_name}", // Menggunakan seller_name dari INNER JOIN
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(16.dp))

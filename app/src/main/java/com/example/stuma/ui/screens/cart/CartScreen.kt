@@ -106,7 +106,7 @@ fun CartItemCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Name: ${item.items_name}", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Stock: ${item.stock}", style = MaterialTheme.typography.bodyMedium)
             Row(

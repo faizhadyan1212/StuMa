@@ -104,7 +104,7 @@ fun WishlistItemCard(item: ItemResponse, onRemove: () -> Unit, onAddToCart: () -
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
+            Text("Name: ${item.items_name}", style = MaterialTheme.typography.bodyLarge)
             Text("Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
             Text("Stock: ${item.stock}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
