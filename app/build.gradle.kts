@@ -85,5 +85,6 @@ dependencies {
 
     // Icons (Material Design Icons)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.foundation)
 
 }

@@ -4,9 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,18 +29,20 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     }
 
     Scaffold(
-        topBar = { HomeTopBar(navController) },
+        topBar = { HomeTopBar(navController, homeViewModel) },
         bottomBar = { HomeBottomBar(navController) }
     ) { innerPadding ->
         HomeContent(
             modifier = Modifier.padding(innerPadding),
-            homeViewModel = homeViewModel
+            homeViewModel = homeViewModel,
+            navController = navController
         )
     }
 }
 
+
 @Composable
-fun HomeTopBar(navController: NavController) {
+fun HomeTopBar(navController: NavController, homeViewModel: HomeViewModel) {
     Column {
         Row(
             modifier = Modifier
@@ -61,7 +62,7 @@ fun HomeTopBar(navController: NavController) {
 
             OutlinedTextField(
                 value = "",
-                onValueChange = {},
+                onValueChange = {}, // Placeholder untuk pencarian jika diperlukan
                 placeholder = { Text("Search items...") },
                 modifier = Modifier
                     .weight(1f)
@@ -72,19 +73,19 @@ fun HomeTopBar(navController: NavController) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clickable { /* Future cart implementation */ },
+                    .clickable { navController.navigate("cart") },
                 contentAlignment = Alignment.Center
             ) {
                 CartIcon()
             }
         }
 
-        FilterRow()
+        FilterRow(homeViewModel)
     }
 }
 
 @Composable
-fun FilterRow() {
+fun FilterRow(homeViewModel: HomeViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,11 +93,13 @@ fun FilterRow() {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val filters = listOf("All", "Clothes", "Stationary", "Furniture", "Electronic")
-        var selectedFilter by remember { mutableStateOf("All") }
+        val selectedFilter by homeViewModel.selectedCategory.collectAsState() // Observe selected category
 
         filters.forEach { filter ->
             TextButton(
-                onClick = { selectedFilter = filter },
+                onClick = {
+                    homeViewModel.filterItemsByCategory(filter) // Update filter on click
+                },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = if (selectedFilter == filter) MaterialTheme.colorScheme.primary else Color.Gray
                 )
@@ -115,7 +118,7 @@ fun HomeBottomBar(navController: NavController) {
     NavigationBar {
         NavigationBarItem(
             selected = false,
-            onClick = { /* Future wishlist implementation */ },
+            onClick = { navController.navigate("wishlist") },
             icon = { WishlistIcon() },
             label = { Text("Wishlist") }
         )
@@ -135,93 +138,95 @@ fun HomeBottomBar(navController: NavController) {
 }
 
 @Composable
-fun HomeContent(modifier: Modifier = Modifier, homeViewModel: HomeViewModel) {
-    // Mengamati perubahan itemsState di HomeViewModel
-    val itemsState by homeViewModel.itemsState.collectAsState()
+fun HomeContent(
+    modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel,
+    navController: NavController
+) {
+    // Observe the filtered items from the HomeViewModel
+    val filteredItems by homeViewModel.filteredItemsState.collectAsState()
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Add scroll capability here
-        verticalArrangement = Arrangement.Top
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Welcome to StuMa!",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // Header
+        item {
+            Text(
+                text = "Welcome to StuMa!",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
-        when (val state = itemsState) {
-            is Result.Loading -> {
-                Log.d("HomeContent", "Loading items...")
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-            is Result.Success -> {
-                Log.d("HomeContent", "Items fetched successfully: ${state.data.size} items")
-                if (state.data.isNotEmpty()) {
-                    ItemList(items = state.data)
-                } else {
-                    Text(
-                        text = "No items available.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            is Result.Failure -> {
-                Log.e("HomeContent", "Error fetching items", state.exception)
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Error: ${state.exception?.message ?: "Unknown error"}",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { homeViewModel.fetchItems() }) {
-                        Text("Retry")
-                    }
-                }
-            }
-            null -> {
-                Log.d("HomeContent", "No items available.")
+        // Display filtered items or a message if the list is empty
+        if (filteredItems.isEmpty()) {
+            item {
                 Text(
                     text = "No items available.",
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
+        } else {
+            items(filteredItems) { item ->
+                ItemCard(item = item, navController = navController)
+            }
         }
-
     }
 }
+
+//            null -> {
+//                item {
+//                    Text(
+//                        text = "No items available.",
+//                        style = MaterialTheme.typography.bodyLarge,
+//                        modifier = Modifier.fillMaxWidth(),
+//                        textAlign = TextAlign.Center
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
+
 
 @Composable
-fun ItemList(items: List<ItemResponse>) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items.forEach { item ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(text = "Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
-                    Text(text = "Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
-                    Text(text = "Stock: ${item.stock}", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
+fun ItemCard(item: ItemResponse, navController: NavController) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navController.navigate("details/${item.id}") }
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Name: ${item.name}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "Price: ${item.price}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Stock: ${item.stock}",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
+
+
 
 @Composable
 fun ProfileIcon() {
