@@ -6,9 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.stuma.data.repository.AuthRepository
 import com.example.stuma.data.repository.HomeRepository
 import com.example.stuma.data.repository.ProfileRepository
@@ -16,7 +18,9 @@ import com.example.stuma.data.repository.SellRepository
 import com.example.stuma.ui.screens.auth.LoginScreen
 import com.example.stuma.ui.screens.auth.RegisterScreen
 import com.example.stuma.ui.screens.cart.CartScreen
+import com.example.stuma.ui.screens.details.ConfirmationScreen
 import com.example.stuma.ui.screens.details.ItemDetailScreen
+import com.example.stuma.ui.screens.details.PaymentScreen
 import com.example.stuma.ui.screens.home.HomeScreen
 import com.example.stuma.ui.screens.profile.EditProfileScreen
 import com.example.stuma.ui.screens.profile.ProfileScreen
@@ -149,5 +153,41 @@ fun MainNavigation(
                 sellViewModel = sellViewModel
             )
         }
+        composable("payment/{price}") { backStackEntry ->
+            val price = backStackEntry.arguments?.getString("price")?.toDouble() ?: 0.0
+            PaymentScreen(
+                navController = navController,
+                initialPrice = price,
+                initialAddress = "Your Address" // Ambil data alamat dari profil pengguna
+            )
+        }
+
+        composable(
+            route = "confirmation/{paymentMethod}/{deliveryOption}/{address}/{totalPrice}",
+            arguments = listOf(
+                navArgument("paymentMethod") { type = NavType.StringType },
+                navArgument("deliveryOption") { type = NavType.StringType },
+                navArgument("address") { type = NavType.StringType },
+                navArgument("totalPrice") { type = NavType.StringType }  // Ubah ke StringType
+            )
+        ) { backStackEntry ->
+            val paymentMethod = backStackEntry.arguments?.getString("paymentMethod") ?: ""
+            val deliveryOption = backStackEntry.arguments?.getString("deliveryOption") ?: ""
+            val address = backStackEntry.arguments?.getString("address") ?: ""
+            val totalPriceString = backStackEntry.arguments?.getString("totalPrice") ?: "0.0"
+            val totalPrice = totalPriceString.toDoubleOrNull() ?: 0.0  // Konversi String ke Double
+
+            ConfirmationScreen(
+                navController = navController,
+                paymentMethod = paymentMethod,
+                deliveryOption = deliveryOption,
+                address = address,
+                totalPrice = totalPrice
+            )
+        }
+
+
+
+
     }
 }

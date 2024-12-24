@@ -20,6 +20,14 @@ import androidx.navigation.NavController
 import com.example.stuma.R
 import com.example.stuma.viewmodel.HomeViewModel
 import com.example.stuma.data.model.ItemResponse
+import java.text.NumberFormat
+import java.util.Locale
+
+// Fungsi untuk memformat harga menjadi format Rupiah
+fun formatToRupiah(amount: Double): String {
+    val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    return format.format(amount)
+}
 
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
@@ -93,13 +101,12 @@ fun FilterRow(homeViewModel: HomeViewModel) {
     val filters = listOf("All", "Clothes", "Stationery", "Furniture", "Electronic")
     val selectedFilter by homeViewModel.selectedCategory.collectAsState()
 
-    // Membungkus Row dengan HorizontalScroll
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .horizontalScroll(rememberScrollState()), // Tambahkan ini untuk scroll horizontal
-        horizontalArrangement = Arrangement.spacedBy(8.dp) // Menambah jarak antar filter
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         filters.forEach { filter ->
             TextButton(
@@ -116,7 +123,6 @@ fun FilterRow(homeViewModel: HomeViewModel) {
         }
     }
 }
-
 
 @Composable
 fun HomeBottomBar(navController: NavController) {
@@ -202,7 +208,7 @@ fun ItemCard(item: ItemResponse, navController: NavController) {
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "Price: ${item.price}",
+                text = "Price: ${formatToRupiah(item.price)}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
