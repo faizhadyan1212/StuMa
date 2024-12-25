@@ -36,10 +36,18 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
      * Jika item sudah ada, tambahkan jumlahnya hingga stok tersedia.
      */
     fun addToCart(item: ItemResponse) {
-        _cart.value = _cart.value.toMutableMap().apply {
-            this[item] = (this[item] ?: 0) + 1
+        if (item.items_name != null) { // Pastikan item tidak null
+            _cart.value = _cart.value.toMutableMap().apply {
+                val currentQuantity = this[item] ?: 0
+                if (currentQuantity < item.stock) {
+                    this[item] = currentQuantity + 1
+                }
+            }
+        } else {
+            Log.e("HomeViewModel", "Item is null: ${item}")
         }
     }
+
 
     /**
      * Hapus item dari cart. Jika jumlah item menjadi 0, hapus dari cart.
@@ -64,8 +72,8 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
      * Tambahkan item ke wishlist.
      */
     fun addToWishlist(item: ItemResponse) {
-        if (!_wishlist.value.contains(item)) {
-            _wishlist.value += item
+        _wishlist.value = _wishlist.value.toMutableList().apply {
+            if (!contains(item)) add(item)
         }
     }
 
@@ -73,7 +81,9 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
      * Hapus item dari wishlist.
      */
     fun removeFromWishlist(item: ItemResponse) {
-        _wishlist.value -= item
+        _wishlist.value = _wishlist.value.toMutableList().apply {
+            remove(item)
+        }
     }
 
     /**
@@ -124,6 +134,18 @@ class HomeViewModel(private val homeRepository: HomeRepository) : ViewModel() {
             currentItems
         } else {
             currentItems.filter { it.category.equals(category, ignoreCase = true) }
+        }
+    }
+
+    fun searchItems(query: String) {
+        val currentItems = (_itemsState.value as? Result.Success)?.data ?: emptyList()
+        _filteredItemsState.value = if (query.isEmpty()) {
+            currentItems
+        } else {
+            currentItems.filter {
+                it.items_name.contains(query, ignoreCase = true) ||
+                        it.category.contains(query, ignoreCase = true)
+            }
         }
     }
 }

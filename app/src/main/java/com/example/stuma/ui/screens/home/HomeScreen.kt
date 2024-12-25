@@ -2,10 +2,12 @@ package com.example.stuma.ui.screens.home
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,12 +19,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.stuma.R
 import com.example.stuma.viewmodel.HomeViewModel
-import com.example.stuma.utils.Result
 import com.example.stuma.data.model.ItemResponse
+import java.text.NumberFormat
+import java.util.Locale
+
+// Fungsi untuk memformat harga menjadi format Rupiah
+fun formatToRupiah(amount: Double): String {
+    val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    return format.format(amount)
+}
 
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
-    // Memastikan data diambil setiap kali HomeScreen dimuat
     LaunchedEffect(Unit) {
         Log.d("HomeScreen", "Fetching items from HomeViewModel")
         homeViewModel.fetchItems()
@@ -40,9 +48,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     }
 }
 
-
 @Composable
 fun HomeTopBar(navController: NavController, homeViewModel: HomeViewModel) {
+    var searchQuery by remember { mutableStateOf("") }
+
     Column {
         Row(
             modifier = Modifier
@@ -61,8 +70,11 @@ fun HomeTopBar(navController: NavController, homeViewModel: HomeViewModel) {
             }
 
             OutlinedTextField(
-                value = "",
-                onValueChange = {}, // Placeholder untuk pencarian jika diperlukan
+                value = searchQuery,
+                onValueChange = { query ->
+                    searchQuery = query
+                    homeViewModel.searchItems(query)
+                },
                 placeholder = { Text("Search items...") },
                 modifier = Modifier
                     .weight(1f)
@@ -86,20 +98,19 @@ fun HomeTopBar(navController: NavController, homeViewModel: HomeViewModel) {
 
 @Composable
 fun FilterRow(homeViewModel: HomeViewModel) {
+    val filters = listOf("All", "Clothes", "Stationery", "Furniture", "Electronic")
+    val selectedFilter by homeViewModel.selectedCategory.collectAsState()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 8.dp)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val filters = listOf("All", "Clothes", "Stationary", "Furniture", "Electronic")
-        val selectedFilter by homeViewModel.selectedCategory.collectAsState() // Observe selected category
-
         filters.forEach { filter ->
             TextButton(
-                onClick = {
-                    homeViewModel.filterItemsByCategory(filter) // Update filter on click
-                },
+                onClick = { homeViewModel.filterItemsByCategory(filter) },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = if (selectedFilter == filter) MaterialTheme.colorScheme.primary else Color.Gray
                 )
@@ -143,7 +154,6 @@ fun HomeContent(
     homeViewModel: HomeViewModel,
     navController: NavController
 ) {
-    // Observe the filtered items from the HomeViewModel
     val filteredItems by homeViewModel.filteredItemsState.collectAsState()
 
     LazyColumn(
@@ -152,7 +162,6 @@ fun HomeContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Header
         item {
             Text(
                 text = "Welcome to StuMa!",
@@ -161,7 +170,6 @@ fun HomeContent(
             )
         }
 
-        // Display filtered items or a message if the list is empty
         if (filteredItems.isEmpty()) {
             item {
                 Text(
@@ -178,21 +186,6 @@ fun HomeContent(
         }
     }
 }
-
-//            null -> {
-//                item {
-//                    Text(
-//                        text = "No items available.",
-//                        style = MaterialTheme.typography.bodyLarge,
-//                        modifier = Modifier.fillMaxWidth(),
-//                        textAlign = TextAlign.Center
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-
 
 @Composable
 fun ItemCard(item: ItemResponse, navController: NavController) {
@@ -211,11 +204,11 @@ fun ItemCard(item: ItemResponse, navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Name: ${item.name}",
+                text = "Name: ${item.items_name}",
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "Price: ${item.price}",
+                text = "Price: ${formatToRupiah(item.price)}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
@@ -225,8 +218,6 @@ fun ItemCard(item: ItemResponse, navController: NavController) {
         }
     }
 }
-
-
 
 @Composable
 fun ProfileIcon() {

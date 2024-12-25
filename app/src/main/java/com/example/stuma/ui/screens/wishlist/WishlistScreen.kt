@@ -32,6 +32,8 @@ import androidx.navigation.NavController
 import com.example.stuma.R
 import com.example.stuma.data.model.ItemResponse
 import com.example.stuma.viewmodel.HomeViewModel
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,8 +106,8 @@ fun WishlistItemCard(item: ItemResponse, onRemove: () -> Unit, onAddToCart: () -
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
-            Text("Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
+            Text("Name: ${item.items_name}", style = MaterialTheme.typography.bodyLarge)
+            Text("Price: Rp ${item.price.toCurrency()}", style = MaterialTheme.typography.bodyMedium)
             Text("Stock: ${item.stock}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -120,4 +122,9 @@ fun WishlistItemCard(item: ItemResponse, onRemove: () -> Unit, onAddToCart: () -
             }
         }
     }
+}
+
+fun Double.toCurrency(): String {
+    val format = NumberFormat.getNumberInstance(Locale("id", "ID"))
+    return format.format(this)
 }
