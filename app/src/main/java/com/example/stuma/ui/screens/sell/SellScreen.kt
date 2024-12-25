@@ -99,7 +99,7 @@ fun SellScreen(
                     onClick = {
                         if (validateInput(itemName, category, description, stock, price)) {
                             val itemRequest = ItemRequest(
-                                name = itemName,
+                                items_name = itemName,
                                 category = category,
                                 description = description,
                                 stock = stock.toInt(),

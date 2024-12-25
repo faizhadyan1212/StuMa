@@ -2,7 +2,7 @@ package com.example.stuma.data.model
 
 // Request model untuk menambah item
 data class ItemRequest(
-    val name: String,
+    val items_name: String,
     val category: String,
     val description: String,
     val stock: Int,
